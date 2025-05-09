@@ -1,29 +1,29 @@
 import { MapPin, Calendar, Compass, Share2 } from "lucide-react"
 
-export function HowItWorks() {
-  const steps = [
-    {
-      icon: <MapPin className="h-10 w-10" />,
-      title: "Choose Indian Destinations",
-      description: "Select from hundreds of destinations across India, from bustling cities to serene mountains.",
-    },
-    {
-      icon: <Calendar className="h-10 w-10" />,
-      title: "Set Your Dates",
-      description: "Plan your trip duration and get real-time availability for accommodations and activities.",
-    },
-    {
-      icon: <Compass className="h-10 w-10" />,
-      title: "Customize Itinerary",
-      description: "Build your perfect day-by-day plan with our drag-and-drop itinerary builder.",
-    },
-    {
-      icon: <Share2 className="h-10 w-10" />,
-      title: "Share & Go",
-      description: "Save your plans, share with friends, split expenses, and start your Indian adventure.",
-    },
-  ]
+const steps = [
+  {
+    icon: <MapPin className="h-10 w-10" />,
+    title: "Choose Indian Destinations",
+    description: "Select from hundreds of destinations across India, from bustling cities to serene mountains.",
+  },
+  {
+    icon: <Calendar className="h-10 w-10" />,
+    title: "Set Your Dates",
+    description: "Plan your trip duration and get real-time availability for accommodations and activities.",
+  },
+  {
+    icon: <Compass className="h-10 w-10" />,
+    title: "Customize Itinerary",
+    description: "Build your perfect day-by-day plan with our drag-and-drop itinerary builder.",
+  },
+  {
+    icon: <Share2 className="h-10 w-10" />,
+    title: "Share & Go",
+    description: "Save your plans, share with friends, split expenses, and start your Indian adventure.",
+  },
+]
 
+export function HowItWorks() {
   return (
     <section className="py-12 bg-muted/50 rounded-xl">
       <div className="container">

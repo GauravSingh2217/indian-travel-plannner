@@ -15,7 +15,6 @@ interface MapViewProps {
 declare global {
   interface Window {
     google?: any
-    initMapView?: () => void
   }
 }
 
@@ -40,51 +39,46 @@ export default function MapView({ destinations, itinerary, transportationMode = 
       }
 
       try {
-        // Check if API key is configured
+        // Fetch API key from server
         const response = await fetch("/api/maps")
         if (!response.ok) {
-          throw new Error("Failed to check Google Maps API configuration")
+          throw new Error("Failed to load Google Maps API key")
         }
 
         const data = await response.json()
-        if (!data.configured) {
-          setMapError("Google Maps API key is not configured. Please check server configuration.")
+        const apiKey = data.apiKey
+
+        if (!apiKey) {
+          setMapError("Google Maps API key is missing. Please check server configuration.")
           setIsLoading(false)
           return
         }
 
-        // Define the callback function
-        window.initMapView = initializeMap
-
-        // Load the Google Maps script with a callback
         const script = document.createElement("script")
-        script.src = `https://maps.googleapis.com/maps/api/js?libraries=places&callback=initMapView`
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`
         script.async = true
         script.defer = true
+        script.onload = initializeMap
         script.onerror = () => {
-          setMapError("Failed to load Google Maps. Please check your internet connection.")
+          setMapError("Failed to load Google Maps. Please check your API key and internet connection.")
           setIsLoading(false)
         }
 
         document.head.appendChild(script)
       } catch (error) {
         console.error("Error loading Google Maps:", error)
-        setMapError("Failed to load Google Maps API configuration from server.")
+        setMapError("Failed to load Google Maps API key from server.")
         setIsLoading(false)
       }
     }
 
     loadGoogleMapsScript()
 
-    // Cleanup function
     return () => {
       // Clean up markers when component unmounts
       markers.forEach((marker) => marker.setMap(null))
       if (directionsRenderer) {
         directionsRenderer.setMap(null)
-      }
-      if (window.initMapView) {
-        delete window.initMapView
       }
     }
   }, [])
@@ -270,7 +264,7 @@ export default function MapView({ destinations, itinerary, transportationMode = 
   }
 
   // Handle retry when map fails to load
-  const handleRetry = () => {
+  const handleRetry = async () => {
     setIsLoading(true)
     setMapError(null)
 
@@ -280,23 +274,39 @@ export default function MapView({ destinations, itinerary, transportationMode = 
       existingScript.remove()
     }
 
-    // Reload the map
-    if (window.initMapView) {
-      delete window.initMapView
-    }
+    try {
+      // Fetch API key from server
+      const response = await fetch("/api/maps")
+      if (!response.ok) {
+        throw new Error("Failed to load Google Maps API key")
+      }
 
-    window.initMapView = initializeMap
+      const data = await response.json()
+      const apiKey = data.apiKey
 
-    const script = document.createElement("script")
-    script.src = `https://maps.googleapis.com/maps/api/js?libraries=places&callback=initMapView`
-    script.async = true
-    script.defer = true
-    script.onerror = () => {
-      setMapError("Failed to load Google Maps. Please check your internet connection.")
+      if (!apiKey) {
+        setMapError("Google Maps API key is missing. Please check server configuration.")
+        setIsLoading(false)
+        return
+      }
+
+      // Reload the map
+      const script = document.createElement("script")
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`
+      script.async = true
+      script.defer = true
+      script.onload = initializeMap
+      script.onerror = () => {
+        setMapError("Failed to load Google Maps. Please check your API key and internet connection.")
+        setIsLoading(false)
+      }
+
+      document.head.appendChild(script)
+    } catch (error) {
+      console.error("Error loading Google Maps:", error)
+      setMapError("Failed to load Google Maps API key from server.")
       setIsLoading(false)
     }
-
-    document.head.appendChild(script)
   }
 
   return (
