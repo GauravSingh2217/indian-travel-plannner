@@ -1,55 +1,67 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Tab Navigation
-  const tabButtons = document.querySelectorAll(".tab-btn")
-  const tabPanes = document.querySelectorAll(".tab-pane")
-  const prevButton = document.getElementById("prev-btn")
-  const nextButton = document.getElementById("next-btn")
-  const saveButton = document.getElementById("save-btn")
-  const shareButton = document.getElementById("share-btn")
+  // DOM Elements
+  var tabButtons = document.querySelectorAll(".tab-btn")
+  var tabPanes = document.querySelectorAll(".tab-pane")
+  var prevButton = document.getElementById("prev-btn")
+  var nextButton = document.getElementById("next-btn")
+  var saveButton = document.getElementById("save-btn")
+  var shareButton = document.getElementById("share-btn")
+  var currentTabIndex = 0
 
-  let currentTabIndex = 0
+  // Trip data object - simple JS object instead of TypeScript interface
+  var tripData = {
+    destinations: [],
+    startDate: null,
+    endDate: null,
+    travelers: "2",
+    budget: "medium",
+    activities: [],
+    accommodation: "hotel",
+    transportation: "public",
+  }
 
-  // Initialize Flatpickr date picker
-  let datePicker // Declare datePicker variable
-  if (document.getElementById("date-picker")) {
-    datePicker = flatpickr("#date-picker", {
+  // Initialize date picker if element exists
+  var datePickerElement = document.getElementById("date-picker")
+  if (datePickerElement) {
+    var datePicker = flatpickr("#date-picker", {
       mode: "range",
       minDate: "today",
       dateFormat: "Y-m-d",
       onChange: (selectedDates) => {
         if (selectedDates.length === 2) {
-          const startDate = selectedDates[0]
-          const endDate = selectedDates[1]
+          tripData.startDate = selectedDates[0]
+          tripData.endDate = selectedDates[1]
 
-          // Update trip summary
-          document.getElementById("start-date").textContent = startDate.toLocaleDateString("en-US", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })
+          // Update trip summary with plain JS
+          var startDateEl = document.getElementById("start-date")
+          var endDateEl = document.getElementById("end-date")
+          var durationEl = document.getElementById("trip-duration")
 
-          document.getElementById("end-date").textContent = endDate.toLocaleDateString("en-US", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })
+          startDateEl.textContent = formatDate(selectedDates[0])
+          endDateEl.textContent = formatDate(selectedDates[1])
 
           // Calculate trip duration
-          const diffTime = Math.abs(endDate - startDate)
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
-          document.getElementById("trip-duration").textContent = `${diffDays} ${diffDays === 1 ? "day" : "days"}`
+          var diffTime = Math.abs(selectedDates[1] - selectedDates[0])
+          var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
+          durationEl.textContent = diffDays + " " + (diffDays === 1 ? "day" : "days")
         }
       },
     })
   }
 
-  // Function to switch tabs
+  // Helper function to format date
+  function formatDate(date) {
+    var options = { weekday: "long", year: "numeric", month: "long", day: "numeric" }
+    return date.toLocaleDateString("en-US", options)
+  }
+
+  // Tab switching function
   function switchTab(index) {
     // Hide all tabs
-    tabButtons.forEach((btn) => btn.classList.remove("active"))
-    tabPanes.forEach((pane) => pane.classList.remove("active"))
+    for (var i = 0; i < tabButtons.length; i++) {
+      tabButtons[i].classList.remove("active")
+      tabPanes[i].classList.remove("active")
+    }
 
     // Show selected tab
     tabButtons[index].classList.add("active")
@@ -72,11 +84,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Add click event to tab buttons
-  tabButtons.forEach((btn, index) => {
-    btn.addEventListener("click", () => {
-      switchTab(index)
-    })
-  })
+  for (var i = 0; i < tabButtons.length; i++) {
+    ;((index) => {
+      tabButtons[index].addEventListener("click", () => {
+        switchTab(index)
+      })
+    })(i)
+  }
 
   // Previous button click
   prevButton.addEventListener("click", () => {
@@ -93,56 +107,102 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
   // Destinations Tab Functionality
-  const destinationSearch = document.getElementById("destination-search")
-  const selectedDestinations = document.getElementById("selected-destinations")
-  const destinationOptions = document.querySelectorAll(".destination-option")
+  var destinationSearch = document.getElementById("destination-search")
+  var selectedDestinations = document.getElementById("selected-destinations")
+  var destinationOptions = document.querySelectorAll(".destination-option")
 
-  if (destinationOptions.length > 0) {
-    // Add click event to destination options
-    destinationOptions.forEach((option) => {
-      option.addEventListener("click", () => {
-        const destination = option.getAttribute("data-destination")
-        addDestination(destination)
-      })
+  // Add click event to destination options
+  for (var i = 0; i < destinationOptions.length; i++) {
+    destinationOptions[i].addEventListener("click", function () {
+      var destination = this.getAttribute("data-destination")
+      addDestination(destination)
     })
   }
 
   // Function to add a destination
   function addDestination(destination) {
     // Check if destination already exists
-    const existingDestinations = Array.from(selectedDestinations.children).map((badge) =>
-      badge.getAttribute("data-destination"),
-    )
+    var existingDestinations = []
+    var badges = selectedDestinations.children
 
-    if (!existingDestinations.includes(destination)) {
+    for (var i = 0; i < badges.length; i++) {
+      existingDestinations.push(badges[i].getAttribute("data-destination"))
+    }
+
+    if (existingDestinations.indexOf(destination) === -1) {
       // Create destination badge
-      const badge = document.createElement("div")
+      var badge = document.createElement("div")
       badge.className = "destination-badge"
       badge.setAttribute("data-destination", destination)
-      badge.innerHTML = `
-        ${destination}
-        <span class="remove-destination">
-          <i class="fas fa-times"></i>
-        </span>
-      `
+      badge.innerHTML = destination + '<span class="remove-destination">' + '<i class="fas fa-times"></i>' + "</span>"
 
       // Add click event to remove button
       badge.querySelector(".remove-destination").addEventListener("click", () => {
         badge.remove()
+
+        // Update trip data
+        var index = tripData.destinations.indexOf(destination)
+        if (index !== -1) {
+          tripData.destinations.splice(index, 1)
+        }
       })
 
       // Add badge to selected destinations
       selectedDestinations.appendChild(badge)
+
+      // Update trip data
+      tripData.destinations.push(destination)
     }
   }
 
+  // Preferences Tab Functionality
+  var budgetRadios = document.querySelectorAll('input[name="budget"]')
+  var activityCheckboxes = document.querySelectorAll('input[name="activities"]')
+  var accommodationRadios = document.querySelectorAll('input[name="accommodation"]')
+  var transportationRadios = document.querySelectorAll('input[name="transportation"]')
+
+  // Add event listeners to budget radios
+  for (var i = 0; i < budgetRadios.length; i++) {
+    budgetRadios[i].addEventListener("change", function () {
+      tripData.budget = this.value
+    })
+  }
+
+  // Add event listeners to activity checkboxes
+  for (var i = 0; i < activityCheckboxes.length; i++) {
+    activityCheckboxes[i].addEventListener("change", function () {
+      if (this.checked) {
+        tripData.activities.push(this.value)
+      } else {
+        var index = tripData.activities.indexOf(this.value)
+        if (index !== -1) {
+          tripData.activities.splice(index, 1)
+        }
+      }
+    })
+  }
+
+  // Add event listeners to accommodation radios
+  for (var i = 0; i < accommodationRadios.length; i++) {
+    accommodationRadios[i].addEventListener("change", function () {
+      tripData.accommodation = this.value
+    })
+  }
+
+  // Add event listeners to transportation radios
+  for (var i = 0; i < transportationRadios.length; i++) {
+    transportationRadios[i].addEventListener("change", function () {
+      tripData.transportation = this.value
+    })
+  }
+
   // Map Toggle
-  const toggleMapButton = document.getElementById("toggle-map")
-  const mapContainer = document.getElementById("map-container")
+  var toggleMapButton = document.getElementById("toggle-map")
+  var mapContainer = document.getElementById("map-container")
 
   if (toggleMapButton && mapContainer) {
     toggleMapButton.addEventListener("click", () => {
-      const isVisible = mapContainer.style.display !== "none"
+      var isVisible = mapContainer.style.display !== "none"
 
       if (isVisible) {
         mapContainer.style.display = "none"
@@ -150,66 +210,96 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         mapContainer.style.display = "block"
         toggleMapButton.innerHTML = '<i class="fas fa-map-marked-alt"></i> Hide Map'
+        initMap()
       }
     })
   }
 
-  // Itinerary Day Tabs
-  const itineraryTabButtons = document.querySelectorAll(".itinerary-tab-btn")
-  const itineraryDayContents = document.querySelectorAll(".itinerary-day-content")
+  // Simple map initialization function
+  function initMap() {
+    // This would be replaced with actual Google Maps initialization
+    console.log("Map initialized")
+  }
 
-  if (itineraryTabButtons.length > 0) {
-    itineraryTabButtons.forEach((btn, index) => {
-      btn.addEventListener("click", () => {
+  // Itinerary Day Tabs
+  var itineraryTabButtons = document.querySelectorAll(".itinerary-tab-btn")
+  var itineraryDayContents = document.querySelectorAll(".itinerary-day-content")
+
+  for (var k = 0; k < itineraryTabButtons.length; k++) {
+    ;((index) => {
+      itineraryTabButtons[index].addEventListener("click", function () {
         // Hide all day contents
-        itineraryTabButtons.forEach((b) => b.classList.remove("active"))
-        itineraryDayContents.forEach((c) => c.classList.remove("active"))
+        for (var j = 0; j < itineraryTabButtons.length; j++) {
+          itineraryTabButtons[j].classList.remove("active")
+          itineraryDayContents[j].classList.remove("active")
+        }
 
         // Show selected day content
-        btn.classList.add("active")
+        this.classList.add("active")
         itineraryDayContents[index].classList.add("active")
       })
+    })(k)
+  }
+
+  // Add Activity Button
+  var addActivityButtons = document.querySelectorAll(".add-activity-btn")
+
+  for (var i = 0; i < addActivityButtons.length; i++) {
+    addActivityButtons[i].addEventListener("click", () => {
+      showActivityModal()
     })
   }
 
-  // Currency Toggle
-  const currencyButtons = document.querySelectorAll(".currency-btn")
-
-  if (currencyButtons.length > 0) {
-    currencyButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        currencyButtons.forEach((b) => b.classList.remove("active"))
-        btn.classList.add("active")
-
-        // In a real app, this would update the displayed currency
-      })
-    })
-  }
-
-  // Transportation Mode Toggle
-  const transportButtons = document.querySelectorAll(".transport-btn")
-
-  if (transportButtons.length > 0) {
-    transportButtons.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        transportButtons.forEach((b) => b.classList.remove("active"))
-        btn.classList.add("active")
-
-        // In a real app, this would update the map route
-      })
-    })
+  function showActivityModal() {
+    alert("Add activity functionality would open a modal here")
+    // In a real implementation, this would open a modal to add an activity
   }
 
   // Save and Share functionality
   if (saveButton) {
     saveButton.addEventListener("click", () => {
+      // Save trip data to localStorage
+      localStorage.setItem("savedTrip", JSON.stringify(tripData))
       alert("Your trip has been saved successfully!")
     })
   }
 
   if (shareButton) {
     shareButton.addEventListener("click", () => {
+      // Generate a shareable link
+      var shareLink = window.location.origin + "/share.html?trip=" + btoa(JSON.stringify(tripData))
+
+      // Copy to clipboard
+      var tempInput = document.createElement("input")
+      document.body.appendChild(tempInput)
+      tempInput.value = shareLink
+      tempInput.select()
+      document.execCommand("copy")
+      document.body.removeChild(tempInput)
+
       alert("Share link has been copied to clipboard!")
     })
+  }
+
+  // Load saved trip data if available
+  var savedTrip = localStorage.getItem("savedTrip")
+  if (savedTrip) {
+    try {
+      var savedTripData = JSON.parse(savedTrip)
+
+      // Restore saved data
+      tripData = savedTripData
+
+      // Populate UI with saved data
+      if (savedTripData.destinations) {
+        savedTripData.destinations.forEach((destination) => {
+          addDestination(destination)
+        })
+      }
+
+      // More restoration logic would go here
+    } catch (e) {
+      console.error("Error loading saved trip:", e)
+    }
   }
 })
