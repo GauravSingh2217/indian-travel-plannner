@@ -8,13 +8,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Address parameter is required" }, { status: 400 })
   }
 
-  const apiKey = process.env.AIzaSyD8r0xGGjx1GN3mWRAYGF0KMah0xAYTEFs
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY
 
   if (!apiKey) {
     return NextResponse.json({ error: "Google Maps API key is not configured" }, { status: 500 })
   }
 
   try {
+    // Make the request to Google Maps API from the server side
     const response = await fetch(
       `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`,
     )

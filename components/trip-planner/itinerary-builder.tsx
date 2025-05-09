@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -220,6 +220,10 @@ export default function ItineraryBuilder({
   onChange,
   travelers = "2",
 }: ItineraryBuilderProps) {
+  // Add this ref to prevent infinite loops
+  const isInitialMount = useRef(true)
+  const prevItineraryRef = useRef<any[]>([])
+
   // Add this state for transportation mode
   const [transportationMode, setTransportationMode] = useState<"DRIVING" | "WALKING" | "BICYCLING" | "TRANSIT">(
     "DRIVING",
@@ -305,10 +309,31 @@ export default function ItineraryBuilder({
         })
 
         setDays(newDays)
-        onChange(newDays)
+
+        // Only call onChange on initial mount or when destinations/dates change
+        if (!isInitialMount.current) {
+          onChange(newDays)
+        }
       }
     }
+
+    // Set initial mount to false after first render
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+    }
   }, [startDate, endDate, destinations, preferences, itinerary, onChange])
+
+  // Update parent component only when days actually change
+  useEffect(() => {
+    // Skip the first render and when days is empty
+    if (days.length > 0 && !isInitialMount.current) {
+      // Only call onChange if the days have actually changed
+      if (JSON.stringify(prevItineraryRef.current) !== JSON.stringify(days)) {
+        prevItineraryRef.current = days
+        onChange(days)
+      }
+    }
+  }, [days, onChange])
 
   // Calculate trip duration
   const tripDuration = startDate && endDate ? differenceInDays(endDate, startDate) + 1 : 0
@@ -349,7 +374,6 @@ export default function ItineraryBuilder({
 
     newDays[dayIndex].activities = activities
     setDays(newDays)
-    onChange(newDays)
   }
 
   // Add a new activity
@@ -397,7 +421,6 @@ export default function ItineraryBuilder({
 
     newDays[dayIndex].activities = activities
     setDays(newDays)
-    onChange(newDays)
     setIsEditingActivity(false)
   }
 
@@ -410,7 +433,6 @@ export default function ItineraryBuilder({
     newDays[dayIndex].activities = newDays[dayIndex].activities.filter((activity) => activity.id !== activityId)
 
     setDays(newDays)
-    onChange(newDays)
   }
 
   // Update shopping budget when it changes

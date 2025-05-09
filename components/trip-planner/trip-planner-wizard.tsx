@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -44,6 +44,9 @@ export default function TripPlannerWizard() {
     itinerary: [],
   })
 
+  // Add this ref to prevent infinite loops
+  const isInitialRender = useRef(true)
+
   const tabs = [
     { id: "destinations", label: "Destinations" },
     { id: "dates", label: "Dates" },
@@ -85,10 +88,22 @@ export default function TripPlannerWizard() {
   }
 
   const updateTripData = (key: keyof TripData, value: any) => {
-    setTripData((prev) => ({
-      ...prev,
-      [key]: value,
-    }))
+    // Prevent unnecessary updates that could cause infinite loops
+    if (key === "itinerary" && isInitialRender.current) {
+      isInitialRender.current = false
+      return
+    }
+
+    setTripData((prev) => {
+      // Only update if the value has actually changed
+      if (JSON.stringify(prev[key]) === JSON.stringify(value)) {
+        return prev
+      }
+      return {
+        ...prev,
+        [key]: value,
+      }
+    })
   }
 
   return (
@@ -175,7 +190,13 @@ export default function TripPlannerWizard() {
             endDate={tripData.endDate}
             preferences={tripData.preferences}
             itinerary={tripData.itinerary}
-            onChange={(itinerary) => updateTripData("itinerary", itinerary)}
+            onChange={(itinerary) => {
+              // Only update if the itinerary has actually changed
+              if (JSON.stringify(tripData.itinerary) !== JSON.stringify(itinerary)) {
+                updateTripData("itinerary", itinerary)
+              }
+            }}
+            travelers={tripData.travelers}
           />
         </TabsContent>
 

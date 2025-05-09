@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Origin and destination are required" }, { status: 400 })
     }
 
-    const apiKey = process.env.AIzaSyD8r0xGGjx1GN3mWRAYGF0KMah0xAYTEFs
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY
 
     if (!apiKey) {
       return NextResponse.json({ error: "Google Maps API key is not configured" }, { status: 500 })
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     // Default to DRIVING if not specified
     const mode = travelMode || "DRIVING"
 
-    const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${apiKey}`
+    const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}${waypointsParam}&mode=${mode.toLowerCase()}&key=${apiKey}`
 
     const response = await fetch(url)
 
