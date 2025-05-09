@@ -1,0 +1,610 @@
+/* Trip Planner Styles */
+.planner-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.planner-header h1 {
+  margin-bottom: 0.5rem;
+}
+
+.planner-header p {
+  color: var(--muted-foreground);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.planner-card {
+  background-color: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.planner-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.tab-btn {
+  padding: 0.75rem;
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  background-color: var(--muted);
+}
+
+.tab-btn.active {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+.tab-pane-content {
+  padding: 1rem 0;
+}
+
+.tab-pane-content h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.tab-description {
+  color: var(--muted-foreground);
+  margin-bottom: 1.5rem;
+}
+
+/* Destinations Tab */
+.search-container {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.search-input {
+  padding-left: 2.5rem;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted-foreground);
+}
+
+.selected-destinations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.destination-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background-color: var(--secondary);
+  border-radius: 9999px;
+  font-size: 0.875rem;
+}
+
+.remove-destination {
+  cursor: pointer;
+  color: var(--muted-foreground);
+  transition: color 0.2s ease;
+}
+
+.remove-destination:hover {
+  color: var(--foreground);
+}
+
+.popular-destinations {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.destination-option {
+  cursor: pointer;
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.destination-option:hover {
+  transform: translateY(-2px);
+}
+
+.destination-option-image {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+
+.destination-option-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.destination-option p {
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  text-align: center;
+  margin-bottom: 0;
+}
+
+/* Dates Tab */
+.dates-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.calendar-container {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.trip-summary {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+
+.trip-summary h3 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.summary-item {
+  margin-bottom: 1rem;
+}
+
+.summary-label {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin-bottom: 0.25rem;
+}
+
+.summary-value {
+  font-weight: 500;
+}
+
+.trip-tip {
+  background-color: var(--muted);
+  border-radius: var(--radius);
+  padding: 1rem;
+  font-size: 0.875rem;
+  margin-top: 1.5rem;
+}
+
+/* Travelers Tab */
+.travelers-form {
+  max-width: 32rem;
+  margin: 0 auto;
+}
+
+.travelers-tips {
+  background-color: var(--muted);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-top: 1.5rem;
+}
+
+.travelers-tips h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.travelers-tips ul {
+  list-style: none;
+  font-size: 0.875rem;
+}
+
+.travelers-tips li {
+  margin-bottom: 0.5rem;
+}
+
+/* Preferences Tab */
+.preferences-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.preference-section {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+
+.preference-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.preference-header i {
+  color: var(--primary);
+}
+
+.preference-header h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0;
+}
+
+.preference-section p {
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.radio-group,
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 0.5rem;
+}
+
+.radio-option,
+.checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.radio-option label,
+.checkbox-option label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0;
+  cursor: pointer;
+}
+
+/* Itinerary Tab */
+.itinerary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.map-container {
+  margin-bottom: 1.5rem;
+}
+
+.map {
+  width: 100%;
+  height: 400px;
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+  background-color: var(--muted);
+}
+
+.map-controls {
+  margin-bottom: 1rem;
+}
+
+.map-controls h3 {
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.transport-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.transport-btn {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.transport-btn:hover {
+  background-color: var(--muted);
+}
+
+.transport-btn.active {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+
+.budget-summary {
+  background-color: var(--muted);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.budget-summary h3 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.budget-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.currency-toggle {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.currency-btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.currency-btn:hover {
+  background-color: var(--secondary);
+}
+
+.currency-btn.active {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+
+.budget-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.budget-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.budget-item-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.budget-item-value {
+  font-weight: 500;
+}
+
+.budget-progress {
+  width: 100%;
+  height: 0.5rem;
+  background-color: var(--background);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.budget-progress-bar {
+  height: 100%;
+  background-color: var(--primary);
+  border-radius: 9999px;
+}
+
+.itinerary-tabs {
+  display: flex;
+  overflow-x: auto;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+}
+
+.itinerary-tab-btn {
+  padding: 0.5rem 1rem;
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.itinerary-tab-btn:hover {
+  background-color: var(--muted);
+}
+
+.itinerary-tab-btn.active {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+
+.itinerary-day-content {
+  display: none;
+}
+
+.itinerary-day-content.active {
+  display: block;
+}
+
+.day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.day-location {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}
+
+.day-weather {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background-color: var(--muted);
+  border-radius: 9999px;
+  font-size: 0.875rem;
+}
+
+.day-activities {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: var(--muted);
+  border-radius: var(--radius);
+}
+
+.activity-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.activity-details {
+  flex: 1;
+}
+
+.activity-details h4 {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.activity-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.activity-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.activity-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.25rem;
+  background-color: transparent;
+  border: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.activity-btn:hover {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.add-activity-btn {
+  width: 100%;
+}
+
+.planner-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.navigation-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .radio-group,
+  .checkbox-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .activity-meta {
+    flex-direction: row;
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .planner-card {
+    padding: 2rem;
+  }
+
+  .popular-destinations {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .dates-container {
+    flex-direction: row;
+  }
+
+  .calendar-container {
+    flex: 1;
+  }
+
+  .trip-summary {
+    flex: 1;
+  }
+}
+
+@media (min-width: 1024px) {
+  .preference-section {
+    padding: 2rem;
+  }
+}
