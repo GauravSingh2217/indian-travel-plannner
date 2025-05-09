@@ -16,9 +16,11 @@ app.use(bodyParser.json())
 app.use(express.static(path.join(__dirname, "/")))
 
 // Initialize Supabase client
-const supabaseUrl = process.env.SUPABASE_URL
-const supabaseKey = process.env.SUPABASE_ANON_KEY
-const supabase = createClient(supabaseUrl, supabaseKey)
+const supabaseUrl = process.env.https://poxfhqpvwswktsrwqfov.supabase.co
+const supabaseKey = process.env.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBveGZocXB2d3N3a3RzcndxZm92Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU2NTA4NDEsImV4cCI6MjA2MTIyNjg0MX0.dYIcHcbCd44O3YwL950pw-f3cyQzQr1WPOG2wtVwUSg
+const supabase = createClient(https://poxfhqpvwswktsrwqfov.supabase.co, eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBveGZocXB2d3N3a3RzcndxZm92Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU2NTA4NDEsImV4cCI6MjA2MTIyNjg0MX0.dYIcHcbCd44O3YwL950pw-f3cyQzQr1WPOG2wtVwUSg)
+
+
 
 // Create database tables if they don't exist
 async function setupDatabase() {
