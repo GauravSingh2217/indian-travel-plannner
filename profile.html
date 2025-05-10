@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Itineraries - Indian Travel Planner</title>
+  <title>My Profile - Indian Travel Planner</title>
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/navbar.css">
-  <link rel="stylesheet" href="css/itineraries.css">
+  <link rel="stylesheet" href="css/profile.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- Supabase JS Library -->
@@ -21,7 +21,7 @@
         <nav class="nav-links">
           <a href="index.html" class="nav-link">Home</a>
           <a href="planner.html" class="nav-link">Trip Planner</a>
-          <a href="itineraries.html" class="nav-link active">My Itineraries</a>
+          <a href="itineraries.html" class="nav-link">My Itineraries</a>
           <a href="explore.html" class="nav-link">Explore</a>
         </nav>
         <div class="nav-actions">
@@ -29,6 +29,7 @@
             <i class="fas fa-sun light-icon"></i>
             <i class="fas fa-moon dark-icon"></i>
           </button>
+          <!-- Auth buttons will be replaced by user menu if logged in -->
           <a href="login.html" class="btn btn-outline">Login</a>
           <a href="signup.html" class="btn btn-primary">Sign Up</a>
           <button class="menu-toggle" aria-label="Toggle menu">
@@ -40,7 +41,7 @@
       <div class="mobile-menu">
         <a href="index.html" class="mobile-link">Home</a>
         <a href="planner.html" class="mobile-link">Trip Planner</a>
-        <a href="itineraries.html" class="mobile-link active">My Itineraries</a>
+        <a href="itineraries.html" class="mobile-link">My Itineraries</a>
         <a href="explore.html" class="mobile-link">Explore</a>
         <div class="mobile-actions">
           <a href="login.html" class="btn btn-outline btn-full">Login</a>
@@ -51,20 +52,20 @@
   </header>
 
   <!-- Main Content -->
-  <main class="container">
-    <div class="itineraries-header">
-      <h1>My Itineraries</h1>
-      <a href="planner.html" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Create New Itinerary
-      </a>
+  <main class="profile-container">
+    <div class="profile-header">
+      <h1>My Profile</h1>
+      <button id="edit-profile-btn" class="btn btn-outline">
+        <i class="fas fa-edit"></i> Edit Profile
+      </button>
     </div>
 
     <!-- Auth Check Message (shown when not logged in) -->
     <div id="auth-check-message" class="auth-check-message" style="display: none;">
       <div class="auth-check-content">
         <i class="fas fa-lock auth-icon"></i>
-        <h2>Please log in to view your itineraries</h2>
-        <p>You need to be logged in to access your saved itineraries.</p>
+        <h2>Please log in to view your profile</h2>
+        <p>You need to be logged in to access your profile information.</p>
         <div class="auth-check-actions">
           <a href="login.html" class="btn btn-primary">Login</a>
           <a href="signup.html" class="btn btn-outline">Sign Up</a>
@@ -75,21 +76,55 @@
     <!-- Loading Indicator -->
     <div id="loading-indicator" class="loading-indicator">
       <div class="spinner"></div>
-      <p>Loading your itineraries...</p>
+      <p>Loading your profile...</p>
     </div>
 
-    <!-- Itineraries List -->
-    <div id="itineraries-list" class="itineraries-list" style="display: none;">
-      <!-- Itineraries will be loaded here dynamically -->
-    </div>
-
-    <!-- Empty State (shown when user has no itineraries) -->
-    <div id="empty-state" class="empty-state" style="display: none;">
-      <div class="empty-state-content">
-        <i class="fas fa-route empty-icon"></i>
-        <h2>No itineraries yet</h2>
-        <p>You haven't created any travel itineraries yet. Start planning your next adventure!</p>
-        <a href="planner.html" class="btn btn-primary">Create Your First Itinerary</a>
+    <!-- Profile Content -->
+    <div id="profile-content" style="display: none;">
+      <div class="profile-card">
+        <div class="profile-content">
+          <div class="profile-section">
+            <h2>Personal Information</h2>
+            <form id="profile-form">
+              <div class="profile-info">
+                <div class="profile-field">
+                  <label for="first-name">First Name</label>
+                  <input type="text" id="first-name" disabled>
+                </div>
+                <div class="profile-field">
+                  <label for="last-name">Last Name</label>
+                  <input type="text" id="last-name" disabled>
+                </div>
+                <div class="profile-field">
+                  <label for="email">Email</label>
+                  <input type="email" id="email" disabled>
+                </div>
+              </div>
+              <div class="profile-actions" style="display: none;">
+                <button type="button" id="cancel-edit-btn" class="btn btn-outline">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+              </div>
+            </form>
+          </div>
+          
+          <div class="profile-section">
+            <h2>Account Statistics</h2>
+            <div class="profile-stats">
+              <div class="stat-card">
+                <div class="stat-value" id="itineraries-count">0</div>
+                <div class="stat-label">Itineraries</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="destinations-count">0</div>
+                <div class="stat-label">Destinations</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="days-planned">0</div>
+                <div class="stat-label">Days Planned</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -143,6 +178,6 @@
   <script src="js/navbar.js"></script>
   <script src="js/supabase-client.js"></script>
   <script src="js/auth.js"></script>
-  <script src="js/itineraries.js"></script>
+  <script src="js/profile.js"></script>
 </body>
 </html>

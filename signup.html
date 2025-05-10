@@ -9,6 +9,8 @@
   <link rel="stylesheet" href="css/auth.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Supabase JS Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <!-- Navbar -->
@@ -56,7 +58,7 @@
         <p>Enter your information to create an account</p>
       </div>
       <div class="auth-content">
-        <form class="auth-form">
+        <form id="signup-form" class="auth-form">
           <div class="form-row">
             <div class="form-group">
               <label for="first-name">First name</label>
@@ -74,11 +76,13 @@
           <div class="form-group">
             <label for="password">Password</label>
             <input type="password" id="password" required>
+            <small class="form-hint">Password must be at least 6 characters</small>
           </div>
           <div class="form-group">
             <label for="confirm-password">Confirm password</label>
             <input type="password" id="confirm-password" required>
           </div>
+          <div id="signup-error" class="error-message" style="display: none;"></div>
           <div class="form-group checkbox-group">
             <input type="checkbox" id="terms" required>
             <label for="terms">
@@ -96,6 +100,7 @@
 
   <script src="js/theme.js"></script>
   <script src="js/navbar.js"></script>
+  <script src="js/supabase-client.js"></script>
   <script src="js/auth.js"></script>
 </body>
 </html>

@@ -1,4 +1,12 @@
-document.addEventListener("DOMContentLoaded", () => {
+import { createClient } from "@supabase/supabase-js"
+import flatpickr from "flatpickr" // Import flatpickr
+
+// Supabase configuration
+const supabaseUrl = "https://your-supabase-url.supabase.co" // Replace with your Supabase URL
+const supabaseKey = "your-supabase-api-key" // Replace with your Supabase API key
+const supabaseClient = createClient(supabaseUrl, supabaseKey)
+
+document.addEventListener("DOMContentLoaded", async () => {
   // DOM Elements
   var tabButtons = document.querySelectorAll(".tab-btn")
   var tabPanes = document.querySelectorAll(".tab-pane")
@@ -8,45 +16,74 @@ document.addEventListener("DOMContentLoaded", () => {
   var shareButton = document.getElementById("share-btn")
   var currentTabIndex = 0
 
+  // Check if user is logged in
+  const {
+    data: { session },
+  } = await supabaseClient.auth.getSession()
+  const isLoggedIn = !!session
+
   // Trip data object - simple JS object instead of TypeScript interface
   var tripData = {
+    id: null, // Will be set if editing an existing itinerary
+    user_id: isLoggedIn ? session.user.id : null,
+    title: "My Trip to India",
     destinations: [],
-    startDate: null,
-    endDate: null,
+    start_date: null,
+    end_date: null,
     travelers: "2",
     budget: "medium",
     activities: [],
     accommodation: "hotel",
     transportation: "public",
+    itinerary_data: {
+      days: [],
+    },
+  }
+
+  // Check if we're editing an existing itinerary
+  const urlParams = new URLSearchParams(window.location.search)
+  const editItineraryId = urlParams.get("edit")
+
+  if (editItineraryId && isLoggedIn) {
+    // Fetch the itinerary data
+    await loadItinerary(editItineraryId)
   }
 
   // Initialize date picker if element exists
   var datePickerElement = document.getElementById("date-picker")
-  if (datePickerElement) {
+  if (datePickerElement && typeof flatpickr === "function") {
     var datePicker = flatpickr("#date-picker", {
       mode: "range",
       minDate: "today",
       dateFormat: "Y-m-d",
       onChange: (selectedDates) => {
         if (selectedDates.length === 2) {
-          tripData.startDate = selectedDates[0]
-          tripData.endDate = selectedDates[1]
+          tripData.start_date = selectedDates[0]
+          tripData.end_date = selectedDates[1]
 
           // Update trip summary with plain JS
           var startDateEl = document.getElementById("start-date")
           var endDateEl = document.getElementById("end-date")
           var durationEl = document.getElementById("trip-duration")
 
-          startDateEl.textContent = formatDate(selectedDates[0])
-          endDateEl.textContent = formatDate(selectedDates[1])
+          if (startDateEl) startDateEl.textContent = formatDate(selectedDates[0])
+          if (endDateEl) endDateEl.textContent = formatDate(selectedDates[1])
 
           // Calculate trip duration
           var diffTime = Math.abs(selectedDates[1] - selectedDates[0])
           var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
-          durationEl.textContent = diffDays + " " + (diffDays === 1 ? "day" : "days")
+          if (durationEl) durationEl.textContent = diffDays + " " + (diffDays === 1 ? "day" : "days")
+
+          // Generate itinerary days
+          generateItineraryDays(diffDays)
         }
       },
     })
+
+    // If editing and we have dates, set them
+    if (tripData.start_date && tripData.end_date) {
+      datePicker.setDate([new Date(tripData.start_date), new Date(tripData.end_date)])
+    }
   }
 
   // Helper function to format date
@@ -68,16 +105,16 @@ document.addEventListener("DOMContentLoaded", () => {
     tabPanes[index].classList.add("active")
 
     // Update navigation buttons
-    prevButton.disabled = index === 0
-    nextButton.disabled = index === tabButtons.length - 1
+    if (prevButton) prevButton.disabled = index === 0
+    if (nextButton) nextButton.disabled = index === tabButtons.length - 1
 
     // Show/hide save and share buttons on last tab
     if (index === tabButtons.length - 1) {
-      saveButton.style.display = "block"
-      shareButton.style.display = "block"
+      if (saveButton) saveButton.style.display = "block"
+      if (shareButton) shareButton.style.display = "block"
     } else {
-      saveButton.style.display = "none"
-      shareButton.style.display = "none"
+      if (saveButton) saveButton.style.display = "none"
+      if (shareButton) shareButton.style.display = "none"
     }
 
     currentTabIndex = index
@@ -93,18 +130,22 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Previous button click
-  prevButton.addEventListener("click", () => {
-    if (currentTabIndex > 0) {
-      switchTab(currentTabIndex - 1)
-    }
-  })
+  if (prevButton) {
+    prevButton.addEventListener("click", () => {
+      if (currentTabIndex > 0) {
+        switchTab(currentTabIndex - 1)
+      }
+    })
+  }
 
   // Next button click
-  nextButton.addEventListener("click", () => {
-    if (currentTabIndex < tabButtons.length - 1) {
-      switchTab(currentTabIndex + 1)
-    }
-  })
+  if (nextButton) {
+    nextButton.addEventListener("click", () => {
+      if (currentTabIndex < tabButtons.length - 1) {
+        switchTab(currentTabIndex + 1)
+      }
+    })
+  }
 
   // Destinations Tab Functionality
   var destinationSearch = document.getElementById("destination-search")
@@ -121,6 +162,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Function to add a destination
   function addDestination(destination) {
+    if (!selectedDestinations) return
+
     // Check if destination already exists
     var existingDestinations = []
     var badges = selectedDestinations.children
@@ -169,8 +212,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Add event listeners to activity checkboxes
-  for (var i = 0; i < activityCheckboxes.length; i++) {
-    activityCheckboxes[i].addEventListener("change", function () {
+  for (var j = 0; j < activityCheckboxes.length; j++) {
+    activityCheckboxes[j].addEventListener("change", function () {
       if (this.checked) {
         tripData.activities.push(this.value)
       } else {
@@ -255,12 +298,339 @@ document.addEventListener("DOMContentLoaded", () => {
     // In a real implementation, this would open a modal to add an activity
   }
 
+  // Function to generate itinerary days
+  function generateItineraryDays(numDays) {
+    // Store the days in the trip data
+    tripData.itinerary_data.days = []
+
+    for (var i = 0; i < numDays; i++) {
+      var day = {
+        day: i + 1,
+        date: new Date(tripData.start_date),
+        activities: [],
+      }
+
+      // Add days to the start date
+      day.date.setDate(day.date.getDate() + i)
+
+      // Add some default activities based on the destination
+      if (tripData.destinations.length > 0) {
+        var destination = tripData.destinations[0]
+
+        if (i === 0) {
+          // First day activities
+          day.activities.push({
+            type: "arrival",
+            title: "Arrival and Check-in",
+            time: "12:00 PM",
+            duration: "2 hours",
+            location: "Hotel",
+          })
+
+          day.activities.push({
+            type: "sightseeing",
+            title: "Local Exploration",
+            time: "3:00 PM",
+            duration: "3 hours",
+            location: destination,
+          })
+
+          day.activities.push({
+            type: "dining",
+            title: "Welcome Dinner",
+            time: "7:00 PM",
+            duration: "2 hours",
+            location: "Local Restaurant",
+          })
+        } else if (i === numDays - 1) {
+          // Last day activities
+          day.activities.push({
+            type: "breakfast",
+            title: "Breakfast",
+            time: "8:00 AM",
+            duration: "1 hour",
+            location: "Hotel",
+          })
+
+          day.activities.push({
+            type: "shopping",
+            title: "Souvenir Shopping",
+            time: "10:00 AM",
+            duration: "2 hours",
+            location: "Local Market",
+          })
+
+          day.activities.push({
+            type: "departure",
+            title: "Check-out and Departure",
+            time: "12:00 PM",
+            duration: "2 hours",
+            location: "Hotel",
+          })
+        } else {
+          // Middle day activities
+          day.activities.push({
+            type: "breakfast",
+            title: "Breakfast",
+            time: "8:00 AM",
+            duration: "1 hour",
+            location: "Hotel",
+          })
+
+          day.activities.push({
+            type: "sightseeing",
+            title: "Sightseeing Tour",
+            time: "10:00 AM",
+            duration: "4 hours",
+            location: destination,
+          })
+
+          day.activities.push({
+            type: "dining",
+            title: "Lunch",
+            time: "2:00 PM",
+            duration: "1 hour",
+            location: "Local Restaurant",
+          })
+
+          day.activities.push({
+            type: "leisure",
+            title: "Free Time / Rest",
+            time: "3:00 PM",
+            duration: "2 hours",
+            location: "Hotel",
+          })
+
+          day.activities.push({
+            type: "cultural",
+            title: "Cultural Experience",
+            time: "5:00 PM",
+            duration: "2 hours",
+            location: destination,
+          })
+
+          day.activities.push({
+            type: "dining",
+            title: "Dinner",
+            time: "7:00 PM",
+            duration: "2 hours",
+            location: "Local Restaurant",
+          })
+        }
+      }
+
+      tripData.itinerary_data.days.push(day)
+    }
+
+    // Update the UI to show the days
+    updateItineraryUI()
+  }
+
+  // Function to update the itinerary UI
+  function updateItineraryUI() {
+    // Get the itinerary tabs container
+    var itineraryTabs = document.querySelector(".itinerary-tabs")
+    if (!itineraryTabs) return
+
+    // Clear existing tabs
+    itineraryTabs.innerHTML = ""
+
+    // Get the container for day content
+    var itineraryTabContent = document.querySelector(".tab-pane#itinerary-tab .tab-pane-content")
+    if (!itineraryTabContent) return
+
+    // Remove existing day content
+    var existingDayContent = itineraryTabContent.querySelectorAll(".itinerary-day-content")
+    existingDayContent.forEach((content) => {
+      content.remove()
+    })
+
+    // Create tabs and content for each day
+    tripData.itinerary_data.days.forEach((day, index) => {
+      // Create tab button
+      var tabButton = document.createElement("button")
+      tabButton.className = "itinerary-tab-btn" + (index === 0 ? " active" : "")
+      tabButton.setAttribute("data-day", "day-" + (index + 1))
+      tabButton.textContent = "Day " + (index + 1)
+
+      // Add click event
+      tabButton.addEventListener("click", function () {
+        // Hide all day contents
+        var allDayContents = document.querySelectorAll(".itinerary-day-content")
+        var allTabButtons = document.querySelectorAll(".itinerary-tab-btn")
+
+        allDayContents.forEach((content) => {
+          content.classList.remove("active")
+        })
+
+        allTabButtons.forEach((btn) => {
+          btn.classList.remove("active")
+        })
+
+        // Show selected day content
+        document.getElementById("day-" + (index + 1) + "-content").classList.add("active")
+        this.classList.add("active")
+      })
+
+      itineraryTabs.appendChild(tabButton)
+
+      // Create day content
+      var dayContent = document.createElement("div")
+      dayContent.className = "itinerary-day-content" + (index === 0 ? " active" : "")
+      dayContent.id = "day-" + (index + 1) + "-content"
+
+      // Format date
+      var formattedDate = day.date.toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+
+      // Get destination for this day
+      var dayDestination = tripData.destinations.length > 0 ? tripData.destinations[0] : "Your destination"
+
+      // Create day header
+      var dayHeader = document.createElement("div")
+      dayHeader.className = "day-header"
+      dayHeader.innerHTML = `
+        <div>
+          <h3>${formattedDate}</h3>
+          <p class="day-location"><i class="fas fa-map-marker-alt"></i> ${dayDestination}</p>
+        </div>
+        <div class="day-weather">
+          <i class="fas fa-sun"></i>
+          <span>32°C</span>
+        </div>
+      `
+
+      dayContent.appendChild(dayHeader)
+
+      // Create activities container
+      var activitiesContainer = document.createElement("div")
+      activitiesContainer.className = "day-activities"
+
+      // Add activities
+      day.activities.forEach((activity) => {
+        var activityItem = document.createElement("div")
+        activityItem.className = "activity-item"
+
+        // Choose icon based on activity type
+        var icon = "calendar"
+        switch (activity.type) {
+          case "arrival":
+          case "departure":
+            icon = "plane"
+            break
+          case "breakfast":
+          case "dining":
+            icon = "utensils"
+            break
+          case "sightseeing":
+            icon = "camera"
+            break
+          case "cultural":
+            icon = "landmark"
+            break
+          case "shopping":
+            icon = "shopping-bag"
+            break
+          case "leisure":
+            icon = "umbrella-beach"
+            break
+        }
+
+        activityItem.innerHTML = `
+          <div class="activity-icon">
+            <i class="fas fa-${icon}"></i>
+          </div>
+          <div class="activity-details">
+            <h4>${activity.title}</h4>
+            <div class="activity-meta">
+              <span><i class="fas fa-clock"></i> ${activity.time} (${activity.duration})</span>
+              <span><i class="fas fa-map-marker-alt"></i> ${activity.location}</span>
+            </div>
+          </div>
+          <div class="activity-actions">
+            <button class="activity-btn" title="Edit"><i class="fas fa-edit"></i></button>
+            <button class="activity-btn" title="Delete"><i class="fas fa-trash"></i></button>
+          </div>
+        `
+
+        activitiesContainer.appendChild(activityItem)
+      })
+
+      dayContent.appendChild(activitiesContainer)
+
+      // Add "Add Activity" button
+      var addActivityBtn = document.createElement("button")
+      addActivityBtn.className = "btn btn-outline add-activity-btn"
+      addActivityBtn.innerHTML = '<i class="fas fa-plus"></i> Add Activity'
+      addActivityBtn.addEventListener("click", showActivityModal)
+
+      dayContent.appendChild(addActivityBtn)
+
+      // Add day content to the page
+      itineraryTabContent.appendChild(dayContent)
+    })
+  }
+
   // Save and Share functionality
   if (saveButton) {
-    saveButton.addEventListener("click", () => {
-      // Save trip data to localStorage
-      localStorage.setItem("savedTrip", JSON.stringify(tripData))
-      alert("Your trip has been saved successfully!")
+    saveButton.addEventListener("click", async () => {
+      if (!isLoggedIn) {
+        alert("Please log in to save your itinerary")
+        window.location.href = "login.html"
+        return
+      }
+
+      try {
+        // Prepare data for saving
+        const itineraryData = {
+          user_id: tripData.user_id,
+          title: tripData.title || "My Trip to India",
+          destinations: tripData.destinations,
+          start_date: tripData.start_date,
+          end_date: tripData.end_date,
+          travelers: tripData.travelers,
+          budget: tripData.budget,
+          activities: tripData.activities,
+          accommodation: tripData.accommodation,
+          transportation: tripData.transportation,
+          itinerary_data: tripData.itinerary_data,
+        }
+
+        let result
+
+        if (tripData.id) {
+          // Update existing itinerary
+          result = await supabaseClient.from("itineraries").update(itineraryData).eq("id", tripData.id).select()
+
+          if (result.error) {
+            throw result.error
+          }
+
+          alert("Your itinerary has been updated successfully!")
+        } else {
+          // Create new itinerary
+          result = await supabaseClient.from("itineraries").insert([itineraryData]).select()
+
+          if (result.error) {
+            throw result.error
+          }
+
+          // Update tripData with the new ID
+          tripData.id = result.data[0].id
+
+          alert("Your itinerary has been saved successfully!")
+        }
+
+        // Redirect to itineraries page
+        window.location.href = "itineraries.html"
+      } catch (error) {
+        console.error("Error saving itinerary:", error)
+        alert("There was an error saving your itinerary. Please try again.")
+      }
     })
   }
 
@@ -281,25 +651,88 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  // Load saved trip data if available
-  var savedTrip = localStorage.getItem("savedTrip")
-  if (savedTrip) {
+  // Function to load an existing itinerary for editing
+  async function loadItinerary(itineraryId) {
     try {
-      var savedTripData = JSON.parse(savedTrip)
+      const { data, error } = await supabaseClient.from("itineraries").select("*").eq("id", itineraryId).single()
 
-      // Restore saved data
-      tripData = savedTripData
+      if (error) {
+        throw error
+      }
 
-      // Populate UI with saved data
-      if (savedTripData.destinations) {
-        savedTripData.destinations.forEach((destination) => {
+      if (!data) {
+        alert("Itinerary not found")
+        return
+      }
+
+      // Update tripData with the loaded data
+      tripData.id = data.id
+      tripData.user_id = data.user_id
+      tripData.title = data.title
+      tripData.destinations = data.destinations
+      tripData.start_date = data.start_date
+      tripData.end_date = data.end_date
+      tripData.travelers = data.travelers
+      tripData.budget = data.budget
+      tripData.activities = data.activities
+      tripData.accommodation = data.accommodation
+      tripData.transportation = data.transportation
+      tripData.itinerary_data = data.itinerary_data
+
+      // Update UI with loaded data
+
+      // Populate destinations
+      if (Array.isArray(tripData.destinations)) {
+        tripData.destinations.forEach((destination) => {
           addDestination(destination)
         })
       }
 
-      // More restoration logic would go here
-    } catch (e) {
-      console.error("Error loading saved trip:", e)
+      // Set budget radio
+      if (tripData.budget) {
+        const budgetRadio = document.querySelector(`input[name="budget"][value="${tripData.budget}"]`)
+        if (budgetRadio) {
+          budgetRadio.checked = true
+        }
+      }
+
+      // Set activities checkboxes
+      if (Array.isArray(tripData.activities)) {
+        tripData.activities.forEach((activity) => {
+          const activityCheckbox = document.querySelector(`input[name="activities"][value="${activity}"]`)
+          if (activityCheckbox) {
+            activityCheckbox.checked = true
+          }
+        })
+      }
+
+      // Set accommodation radio
+      if (tripData.accommodation) {
+        const accommodationRadio = document.querySelector(
+          `input[name="accommodation"][value="${tripData.accommodation}"]`,
+        )
+        if (accommodationRadio) {
+          accommodationRadio.checked = true
+        }
+      }
+
+      // Set transportation radio
+      if (tripData.transportation) {
+        const transportationRadio = document.querySelector(
+          `input[name="transportation"][value="${tripData.transportation}"]`,
+        )
+        if (transportationRadio) {
+          transportationRadio.checked = true
+        }
+      }
+
+      // Update itinerary UI
+      if (tripData.itinerary_data && tripData.itinerary_data.days) {
+        updateItineraryUI()
+      }
+    } catch (error) {
+      console.error("Error loading itinerary:", error)
+      alert("There was an error loading the itinerary. Please try again.")
     }
   }
 })
